@@ -101,27 +101,60 @@ const promptAddDepartment = () => {
     })
 }
 
+// 
+
 const promptAddRole = () => {
-    return connection.promise().query(
-        'SELECT * FROM department;',
-    ).then((res) => {
-        let departments = [];
-        for (let i = 0; i > result[0].length; i++) {
-            // push values into the array
-            departments.push()
-        }
-        console.log(res[0].TextRow.name)
-        // make it a drop down
-        return {
-            type: 'list',
-            name: 'menu',
-            message: 'What would you like to do?',
-            choices: departments
+    function employeeFirstName() {
+        var employees = connection.query('SELECT first_name FROM employee;')
+        for (var i = 0; i < employees.length; i++) {
+            var employee = employees[i];
+            employees.map(employee);
+            console.log(employee);
         }
     }
-    ).catch((err) =>
-        console.log(err)
-    )
+    employeeFirstName();
+
+    // ).then((res) => {
+    //     console.log(res[0])
+
+    //     let departments = [];
+    //     for (let i = 0; i > res[0].length; i++) {
+    //         // push values into the array
+    //         departments.push()
+    //     }
+    //     // make it a drop down
+    //     return {
+    //         type: 'list',
+    //         name: 'menu',
+    //         message: 'Which department are you from?',
+    //         choices: departments
+    //     }
+    // }
+    // ).catch((err) =>
+    //     console.log(err)
+    // )
+
+    // return connection.promise().query(
+    //     'SELECT * FROM department;',
+    // ).then((res) => {
+    //     console.log(res[0])
+
+    //     let departments = [];
+    //     for (let i = 0; i > res[0].length; i++) {
+    //         // push values into the array
+    //         departments.push()
+    //     }
+    //     // make it a drop down
+    //     return {
+    //         type: 'list',
+    //         name: 'menu',
+    //         message: 'Which department are you from?',
+    //         choices: departments
+    //     }
+    // }
+    // ).catch((err) =>
+    //     console.log(err)
+    // )
 
     // return inquirer.prompt([
     //     {
