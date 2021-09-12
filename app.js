@@ -55,9 +55,11 @@ const selectDepartments = () => {
         'SELECT * FROM department;',
         (err, results) => {
             console.table(results); // results contains rows returned by server
+            // const departmentChoices = results.map(data => ({
+            //     value: data.id, name: data.name
             promptMenu();
-        }
-    )
+        });
+    // promptMenu(departmentChoices);
 };
 const selectRoles = () => {
     connection.query(
@@ -78,130 +80,347 @@ const selectEmployees = () => {
     )
 };
 
-const promptAddDepartment = () => {
-    return inquirer.prompt([
+
+const promptAddDepartment = (departmentChoices) => {
+
+    inquirer.prompt([
         {
-            type: 'input',
-            name: 'name',
-            message: 'What is the name of the department? (Required)',
-            validate: nameInput => {
-                if (nameInput) {
-                    return true;
-                } else {
-                    console.log('Please enter the name of your department!');
-                    return false;
-                }
-            }
+            type: 'list',
+            name: 'departmentName',
+            message: 'What is the name of your department? (Required)',
+            choices: departmentChoices
         },
     ]).then(answers => {
-        console.log(answers);
-        const manager = new Manager(answers.name, answers.employeeId, answers.email, answers.officeNumber);
-        teamMembers.push(manager);
-        promptMenu();
-    })
+        console.log("answers", answers.departmentName);
+        // const manager = new Manager(answers.name, answers.employeeId, answers.email, answers.officeNumber);
+        // teamMembers.push(manager);
+
+        var query =
+            `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department 
+  FROM employee e
+  JOIN role r
+	ON e.role_id = r.id
+  JOIN department d
+  ON d.id = r.department_id
+  WHERE d.id = ?`
+
+        connection.query(query, answers.departmentName, function (err, res) {
+            if (err) throw err;
+
+            console.table("response ", res);
+            console.log(res.affectedRows + "Employees are viewed!\n");
+
+            promptMenu();
+        })
+    });
 }
 
 // 
 
 const promptAddRole = () => {
-    function employeeFirstName() {
-        var employees = connection.query('SELECT first_name FROM employee;')
-        for (var i = 0; i < employees.length; i++) {
-            var employee = employees[i];
-            employees.map(employee);
-            console.log(employee);
-        }
-    }
-    employeeFirstName();
 
-    // ).then((res) => {
-    //     console.log(res[0])
+    return connection.promise().query(
+        "SELECT department.id, department.name FROM department;"
+    )
+        .then(([departments]) => {
+            let departmentChoices = departments.map(({
+                id,
+                name
+            }) => ({
+                name: name,
+                value: id
+            }));
 
-    //     let departments = [];
-    //     for (let i = 0; i > res[0].length; i++) {
-    //         // push values into the array
-    //         departments.push()
-    //     }
-    //     // make it a drop down
-    //     return {
-    //         type: 'list',
-    //         name: 'menu',
-    //         message: 'Which department are you from?',
-    //         choices: departments
-    //     }
-    // }
-    // ).catch((err) =>
-    //     console.log(err)
-    // )
+            inquirer.prompt(
+                [{
+                    type: 'input',
+                    name: 'name',
+                    message: 'Enter the name of your title (Required)',
+                    validate: titleName => {
+                        if (titleName) {
+                            return true;
+                        } else {
+                            console.log('Please enter your title name!');
+                            return false;
+                        }
+                    }
+                },
+                {
+                    type: 'list',
+                    name: 'department',
+                    message: 'Which department are you from?',
+                    choices: departmentChoices
+                },
+                {
+                    type: 'input',
+                    name: 'salary',
+                    message: 'Enter your salary (Required)',
+                    validate: salary => {
+                        if (salary) {
+                            return true;
+                        } else {
+                            console.log('Please enter your salary!');
+                            return false;
+                        }
+                    }
+                }
+                ]
+            )
+                .then(roles => {
+                    // TODO: Create the role with the responses.
+                    console.log(roles);
+                    //     let roleChoices = roles.map(({
+                    //         id,
+                    //         name
+                    //     }) => ({
+                    //         name: name,
+                    //         value: id
+                    //     }));
+                });
 
-    // return connection.promise().query(
-    //     'SELECT * FROM department;',
-    // ).then((res) => {
-    //     console.log(res[0])
+        })
+}
 
-    //     let departments = [];
-    //     for (let i = 0; i > res[0].length; i++) {
-    //         // push values into the array
-    //         departments.push()
-    //     }
-    //     // make it a drop down
-    //     return {
-    //         type: 'list',
-    //         name: 'menu',
-    //         message: 'Which department are you from?',
-    //         choices: departments
-    //     }
-    // }
-    // ).catch((err) =>
-    //     console.log(err)
-    // )
+// const promptAddRole = () => {
+//     function employeeFirstName() {
+//         var employees = connection.query('SELECT first_name FROM employee;')
+//         for (var i = 0; i < employees.length; i++) {
+//             var employee = employees[i];
+//             employees.map(employee);
+//             console.log(employee);
+//         }
+//     }
+//     employeeFirstName();
 
-    // return inquirer.prompt([
-    //     {
-    //         type: 'input',
-    //         name: 'name',
-    //         message: 'Enter the name of your title (Required)',
-    //         validate: titleName => {
-    //             if (titleName) {
-    //                 return true;
-    //             } else {
-    //                 console.log('Please enter your title name!');
-    //                 return false;
-    //             }
-    //         }
-    //     },
-    //     {
-    //         type: 'list',
-    //         name: 'department',
-    //         message: 'Which department are you from?',
-    //         choices: departmentChoices
-    //     },
-    //     {
-    //         type: 'input',
-    //         name: 'salary',
-    //         message: 'Enter your salary (Required)',
-    //         validate: salary => {
-    //             if (salary) {
-    //                 return true;
-    //             } else {
-    //                 console.log('Please enter your salary!');
-    //                 return false;
-    //             }
-    //         }
-    //     },
-    //     {
-    //         type: 'input',
-    //         name: 'department',
-    //         message: 'Enter your department name (Required)',
-    //         validate: department => {
-    //             if (department) {
-    //                 return true;
-    //             } else {
-    //                 console.log('Please enter your department name!');
-    //                 return false;
-    //             }
-    //         }
-    //     }
+// ).then((res) => {
+//     console.log(res[0])
+
+//     let departments = [];
+//     for (let i = 0; i > res[0].length; i++) {
+//         // push values into the array
+//         departments.push()
+//     }
+//     // make it a drop down
+//     return {
+//         type: 'list',
+//         name: 'menu',
+//         message: 'Which department are you from?',
+//         choices: departments
+//     }
+// }
+// ).catch((err) =>
+//     console.log(err)
+// )
+
+// return connection.promise().query(
+//     'SELECT * FROM department;',
+// ).then((res) => {
+//     console.log(res[0])
+
+//     let departments = [];
+//     for (let i = 0; i > res[0].length; i++) {
+//         // push values into the array
+//         departments.push()
+//     }
+//     // make it a drop down
+//     return {
+//         type: 'list',
+//         name: 'menu',
+//         message: 'Which department are you from?',
+//         choices: departments
+//     }
+// }
+// ).catch((err) =>
+//     console.log(err)
+// )
+
+// return inquirer.prompt([
+//     {
+//         type: 'input',
+//         name: 'name',
+//         message: 'Enter the name of your title (Required)',
+//         validate: titleName => {
+//             if (titleName) {
+//                 return true;
+//             } else {
+//                 console.log('Please enter your title name!');
+//                 return false;
+//             }
+//         }
+//     },
+//     {
+//         type: 'list',
+//         name: 'department',
+//         message: 'Which department are you from?',
+//         choices: departmentChoices
+//     },
+//     {
+//         type: 'input',
+//         name: 'salary',
+//         message: 'Enter your salary (Required)',
+//         validate: salary => {
+//             if (salary) {
+//                 return true;
+//             } else {
+//                 console.log('Please enter your salary!');
+//                 return false;
+//             }
+//         }
+//     },
+//     {
+//         type: 'input',
+//         name: 'department',
+//         message: 'Enter your department name (Required)',
+//         validate: department => {
+//             if (department) {
+//                 return true;
+//             } else {
+//                 console.log('Please enter your department name!');
+//                 return false;
+//             }
+//         }
+//     }
+// }
+
+const promptAddEmployee = () => {
+
+    return connection.promise().query(
+        "SELECT R.id, R.title FROM role R;"
+    )
+        .then(([employees]) => {
+            let titleChoices = employees.map(({
+                id,
+                title
+
+            }) => ({
+                title: id,
+                value: title
+            }))
+
+            inquirer.prompt(
+                [{
+                    type: 'input',
+                    name: 'firstName',
+                    message: 'What is the employees first name (Required)',
+                    validate: firstName => {
+                        if (firstName) {
+                            return true;
+                        } else {
+                            console.log('Please enter the employees first name!');
+                            return false;
+                        }
+                    }
+                },
+                {
+                    type: 'input',
+                    name: 'lastName',
+                    message: 'What is the employees last name (Required)',
+                    validate: lastName => {
+                        if (lastName) {
+                            return true;
+                        } else {
+                            console.log('Please enter the employees last name!');
+                            return false;
+                        }
+                    }
+                },
+                {
+                    type: 'list',
+                    name: 'employeesRole',
+                    message: 'What is the employees role?',
+                    choices: titleChoices
+                },
+                // {
+                //     type: 'list',
+                //     name: 'managersRole',
+                //     message: 'Who is the employees manager?',
+                //     choices: managerChoices
+                // }
+                {
+                    type: 'input',
+                    name: 'manager',
+                    message: 'Who is the employees manager? (Required)',
+                    validate: manager => {
+                        if (manager) {
+                            return true;
+                        } else {
+                            console.log('Please enter your employees manager!');
+                            return false;
+                        }
+                    }
+                }]
+
+            ).then(employees => {
+                // TODO: Create the role with the responses.
+                console.table(employees);
+                console.log(employees + "inserted successfully!\n");
+            });
+
+        })
+}
+
+const promptUpdateRole = () => {
+
+    return connection.promise().query(
+        "SELECT department.id, department.name FROM department;"
+    )
+        .then(([departments]) => {
+            let departmentChoices = departments.map(({
+                id,
+                name
+            }) => ({
+                name: name,
+                value: id
+            }));
+
+            inquirer.prompt(
+                [{
+                    type: 'input',
+                    name: 'name',
+                    message: 'Enter the name of your title (Required)',
+                    validate: titleName => {
+                        if (titleName) {
+                            return true;
+                        } else {
+                            console.log('Please enter your title name!');
+                            return false;
+                        }
+                    }
+                },
+                {
+                    type: 'list',
+                    name: 'department',
+                    message: 'Which department are you from?',
+                    choices: departmentChoices
+                },
+                {
+                    type: 'input',
+                    name: 'salary',
+                    message: 'Enter your salary (Required)',
+                    validate: salary => {
+                        if (salary) {
+                            return true;
+                        } else {
+                            console.log('Please enter your salary!');
+                            return false;
+                        }
+                    }
+                }
+                ]
+            )
+                .then(roles => {
+                    // TODO: Create the role with the responses.
+                    console.log(roles);
+                    //     let roleChoices = roles.map(({
+                    //         id,
+                    //         name
+                    //     }) => ({
+                    //         name: name,
+                    //         value: id
+                    //     }));
+                });
+
+        })
 }
 
 promptMenu();
