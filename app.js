@@ -154,12 +154,20 @@ const promptAddRole = () => {
                 }
                 ]
             )
-                .then(roles => {
+                .then(({ name, department, salary }) => {
                     // TODO: Create the role with the responses.
-                    console.log(roles);
-
-                    promptAddEmployee(roles);
-                });
+                    const query = connection.query(
+                        'INSERT INTO role SET ?',
+                        {
+                            name: name,
+                            department: department,
+                            salary: salary
+                        },
+                        function (err, res) {
+                            if (err) throw err;
+                        }
+                    )
+                }).then(() => promptAddEmployee())
 
         })
 }
@@ -232,12 +240,30 @@ const promptAddEmployee = (roles) => {
                     }
                 }]
 
-            ).then(employees => {
-                // TODO: Create the role with the responses.
-                console.table(employees);
-                console.log(employees + "inserted successfully!\n");
-                resolve(rows);
-            });
+            )
+                .then(({ firstName, lastName, employeeRole, manager }) => {
+                    const query = connection.query(
+                        'INSERT INTO employee SET ?',
+                        {
+                            first_name: firstName,
+                            last_name: lastName,
+                            title: employeeRole,
+                            manager: manager
+                        },
+                        function (err, res) {
+                            if (err) throw err;
+                            // console.table(depname)
+                        }
+                    )
+                })
+                .then(() => viewEmployee())
+
+            // .then(employees => {
+            //     // TODO: Create the role with the responses.
+            //     console.table(employees);
+            //     console.log(employees + "inserted successfully!\n");
+            //     resolve(rows);
+            // });
         })
 }
 

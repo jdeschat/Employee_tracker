@@ -13,7 +13,6 @@ This is a command-line application built to help manage a company's employee dat
 - [Acceptance Criteria](#acceptance-criteria)
 - [Installation](#installation)
 - [Usage](#usage)
-- [License](#license)
 - [Contributors](#contributors)
 - [Tests](#tests)
 - [Technology Used](#technology-used)
