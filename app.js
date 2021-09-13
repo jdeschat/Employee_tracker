@@ -71,6 +71,7 @@ const selectEmployees = () => {
         "SELECT E.id, E.first_name, E.last_name, R.title, D.name AS department, R.salary, CONCAT(M.first_name,' ',M.last_name) AS manager FROM employee E JOIN role R ON E.role_id = R.id JOIN department D ON R.department_id = D.id JOIN employee M ON E.manager_id = M.id;",
         (err, results) => {
             console.table(results); // results contains rows returned by server
+            promptMenu();
             // promptAddDepartment(departmentChoices);
         }
     )
@@ -79,7 +80,7 @@ const selectEmployees = () => {
 const promptAddDepartment = () => {
     inquirer.prompt([{
         type: 'input',
-        name: 'departmentName',
+        name: 'name',
         message: 'Name the department you would like to add?',
         validate: departmentName => {
             if (departmentName) {
@@ -91,8 +92,8 @@ const promptAddDepartment = () => {
         }
     }
     ])
-        .then(departmentName => {
-            connection.promise().query("INSERT INTO department SET name=?", departmentName);
+        .then(name => {
+            connection.promise().query("INSERT INTO department SET ?", name);
             selectDepartments();
         })
 }
@@ -115,7 +116,7 @@ const promptAddRole = () => {
             inquirer.prompt(
                 [{
                     type: 'input',
-                    name: 'name',
+                    name: 'title',
                     message: 'Enter the name of your title (Required)',
                     validate: titleName => {
                         if (titleName) {
@@ -147,13 +148,13 @@ const promptAddRole = () => {
                 }
                 ]
             )
-                .then(({ name, department, salary }) => {
+                .then(({ title, department, salary }) => {
                     // TODO: Create the role with the responses.
                     const query = connection.query(
                         'INSERT INTO role SET ?',
                         {
-                            name: name,
-                            department: department,
+                            title: title,
+                            department_id: department.value,
                             salary: salary
                         },
                         function (err, res) {
@@ -180,83 +181,75 @@ const promptAddEmployee = (roles) => {
                 value: title
             }))
 
-            inquirer.prompt(
-                [{
-                    type: 'input',
-                    name: 'firstName',
-                    message: 'What is the employees first name (Required)',
-                    validate: firstName => {
-                        if (firstName) {
-                            return true;
-                        } else {
-                            console.log('Please enter the employees first name!');
-                            return false;
-                        }
-                    }
-                },
-                {
-                    type: 'input',
-                    name: 'lastName',
-                    message: 'What is the employees last name (Required)',
-                    validate: lastName => {
-                        if (lastName) {
-                            return true;
-                        } else {
-                            console.log('Please enter the employees last name!');
-                            return false;
-                        }
-                    }
-                },
-                {
-                    type: 'list',
-                    name: 'employeesRole',
-                    message: 'What is the employees role?',
-                    choices: titleChoices
-                },
-                // {
-                //     type: 'list',
-                //     name: 'managersRole',
-                //     message: 'Who is the employees manager?',
-                //     choices: managerChoices
-                // }
-                {
-                    type: 'input',
-                    name: 'manager',
-                    message: 'Who is the employees manager? (Required)',
-                    validate: manager => {
-                        if (manager) {
-                            return true;
-                        } else {
-                            console.log('Please enter your employees manager!');
-                            return false;
-                        }
-                    }
-                }]
+            connection.promise().query(
+                "SELECT E.id, CONCAT(E.first_name,' ',E.last_name) AS manager FROM employee E;"
+            ).then(([managers]) => {
+                let managerChoices = managers.map(({
+                    id,
+                    manager
+                }) => ({
+                    id: id,
+                    name: manager
+                }));
 
-            )
-                .then(({ firstName, lastName, employeeRole, manager }) => {
-                    const query = connection.query(
-                        'INSERT INTO employee SET ?',
-                        {
-                            first_name: firstName,
-                            last_name: lastName,
-                            title: employeeRole,
-                            manager: manager
-                        },
-                        function (err, res) {
-                            if (err) throw err;
-                            // console.table(depname)
+                inquirer.prompt(
+                    [{
+                        type: 'input',
+                        name: 'firstName',
+                        message: 'What is the employees first name (Required)',
+                        validate: firstName => {
+                            if (firstName) {
+                                return true;
+                            } else {
+                                console.log('Please enter the employees first name!');
+                                return false;
+                            }
                         }
-                    )
-                })
-                .then(() => viewEmployee())
+                    },
+                    {
+                        type: 'input',
+                        name: 'lastName',
+                        message: 'What is the employees last name (Required)',
+                        validate: lastName => {
+                            if (lastName) {
+                                return true;
+                            } else {
+                                console.log('Please enter the employees last name!');
+                                return false;
+                            }
+                        }
+                    },
+                    {
+                        type: 'list',
+                        name: 'role',
+                        message: 'What is the employees role?',
+                        choices: titleChoices
+                    },
+                    {
+                        type: 'list',
+                        name: 'manager',
+                        message: 'Who is the employees manager?',
+                        choices: managerChoices
+                    }
 
-            // .then(employees => {
-            //     // TODO: Create the role with the responses.
-            //     console.table(employees);
-            //     console.log(employees + "inserted successfully!\n");
-            //     resolve(rows);
-            // });
+                    ])
+                    .then(({ firstName, lastName, role, manager }) => {
+                        const query = connection.query(
+                            'INSERT INTO employee SET ?',
+                            {
+                                first_name: firstName,
+                                last_name: lastName,
+                                role_id: role.id,
+                                manager_id: manager.id
+                            },
+                            function (err, res) {
+                                if (err) throw err;
+                                // console.table(depname)
+                            }
+                        )
+                    })
+                    .then(() => selectEmployees())
+            })
         })
 }
 
