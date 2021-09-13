@@ -56,6 +56,7 @@ const selectDepartments = () => {
             promptMenu();
         });
 };
+
 const selectRoles = () => {
     connection.query(
         'SELECT * FROM role;',
@@ -70,7 +71,7 @@ const selectEmployees = () => {
         "SELECT E.id, E.first_name, E.last_name, R.title, D.name AS department, R.salary, CONCAT(M.first_name,' ',M.last_name) AS manager FROM employee E JOIN role R ON E.role_id = R.id JOIN department D ON R.department_id = D.id JOIN employee M ON E.manager_id = M.id;",
         (err, results) => {
             console.table(results); // results contains rows returned by server
-            promptMenu();
+            // promptAddDepartment(departmentChoices);
         }
     )
 };
@@ -91,38 +92,10 @@ const promptAddDepartment = () => {
     }
     ])
         .then(departmentName => {
-            connection.promise().query("INSERT INTO department SET ?", departmentName),
-                function (err, res) {
-                    if (err) throw err;
-                    console.log(departmentName);
-                }
+            connection.promise().query("INSERT INTO department SET name=?", departmentName);
             selectDepartments();
         })
-
-    // connection.connect(function (err) {
-    //     if (err) throw err;
-    //     console.log("Connected!");
-    //     var sql = "INSERT INTO department (name) VALUES ?";
-    //     var values = [
-    //         [departmentName]
-    //     ];
-    //     console.query(sql, [values], function (err, result) {
-    //         if (err) throw err;
-    //         console.log("Number of records inserted: " + result.affectedRows);
-    //     });
-    // }
-    // var query = connection.query(
-    //     "INSERT INTO department SET ?",
-    //     {
-    //         name: departmentName
-    //     },
-    //     function (err, res) {
-    //         if (err) throw err;
-    //         console.log(departmentName);
-    //     }
-    // )
-
-};
+}
 
 
 const promptAddRole = () => {
