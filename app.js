@@ -4,7 +4,7 @@ const mysql = require('mysql2');
 require('console.table');
 
 // create the connection to database
-const connection = mysql.createConnection({
+var connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     database: 'employeeDb',
@@ -91,19 +91,39 @@ const promptAddDepartment = () => {
     }
     ])
         .then(departmentName => {
-            const query = connection.query(
-                "INSERT INTO department SET ?",
-                {
-                    name: departmentName
-                },
+            connection.promise().query("INSERT INTO department SET ?", departmentName),
                 function (err, res) {
                     if (err) throw err;
                     console.log(departmentName);
                 }
-            )
+            selectDepartments();
         })
-        .then(() => selectDepartments())
-}
+
+    // connection.connect(function (err) {
+    //     if (err) throw err;
+    //     console.log("Connected!");
+    //     var sql = "INSERT INTO department (name) VALUES ?";
+    //     var values = [
+    //         [departmentName]
+    //     ];
+    //     console.query(sql, [values], function (err, result) {
+    //         if (err) throw err;
+    //         console.log("Number of records inserted: " + result.affectedRows);
+    //     });
+    // }
+    // var query = connection.query(
+    //     "INSERT INTO department SET ?",
+    //     {
+    //         name: departmentName
+    //     },
+    //     function (err, res) {
+    //         if (err) throw err;
+    //         console.log(departmentName);
+    //     }
+    // )
+
+};
+
 
 const promptAddRole = () => {
 
