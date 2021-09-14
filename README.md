@@ -119,11 +119,9 @@ Made with [contributors-img](https://contrib.rocks).
 ## Questions
 My Github username is jdeschat, which can be accessed here https://github.com/jdeschat/Employee_tracker.
 
-The Github page for this project can be accessed using the following link: https://jdeschat.github.io/Employee_tracker/.
-
 You can reach me at jdeschat@gmail.com with additional questions.
   
 Below is the link to my demo video on my Github:
 - [Video location in Github](https://github.com/jdeschat/Employee_tracker/tree/main/assets/video)
 
-assets/video/demo.gif
+![Alt Text](https://github.com/jdeschat/Employee_tracker/blob/main/assets/video/demo.gif)
