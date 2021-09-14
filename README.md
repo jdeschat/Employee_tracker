@@ -123,6 +123,7 @@ The Github page for this project can be accessed using the following link: https
 
 You can reach me at jdeschat@gmail.com with additional questions.
   
-Below are links to my demo video and the video location on my Github, respectfully:
-- [Link to Demo Video](https://youtu.be/)
+Below is the link to my demo video on my Github:
 - [Video location in Github](https://github.com/jdeschat/Employee_tracker/tree/main/assets/video)
+
+assets/video/demo.gif
