@@ -257,46 +257,84 @@ const promptAddEmployee = (roles) => {
 const promptUpdateRole = () => {
 
     return connection.promise().query(
-        "SELECT E.role_id, E.manager_id, CONCAT(E.first_name,' ',E.last_name) AS employee, CONCAT(M.first_name,' ',M.last_name) AS manager FROM employee E JOIN employee M ON E.manager_id = M.id;"
-        // "SELECT E.id, E.first_name, E.last_name, R.title, D.name AS department, R.salary, CONCAT(M.first_name,' ',M.last_name) AS manager FROM employee E JOIN role R ON E.role_id = R.id JOIN department D ON R.department_id = D.id JOIN employee M ON E.manager_id = M.id;"
+        "SELECT R.id, R.title, R.salary, R.department_id FROM role R;"
     )
-        .then(([managers]) => {
-            let managerChoices = managers.map(({
-                manager_id,
-                manager
+        .then(([roles]) => {
+            let roleChoices = roles.map(({
+                id,
+                title
+
             }) => ({
-                name: manager,
-                value: manager_id
-            }));
-            let employeeChoices = managers.map(({
-                role_id,
-                employee
-            }) => ({
-                name: employee,
-                value: role_id
+                value: id,
+                name: title
             }));
 
             inquirer.prompt(
-                [{
-                    type: 'input',
-                    name: 'name',
-                    message: 'Which employees manager would you like to update? (Required)',
-                    choices: managerChoices
-                },
-                {
-                    type: 'list',
-                    name: 'department',
-                    message: 'Which employee do you want to set as manager for the selected employee?',
-                    choices: employeeChoices
-                }
+                [
+                    {
+                        type: 'list',
+                        name: 'role',
+                        message: 'Which role do you want to update?',
+                        choices: roleChoices
+                    }
                 ]
             )
-                .then(managers => {
+                .then(role => {
                     // TODO: Update the managers with the responses.
-                    console.log(managers);
-                });
+                    console.log(role);
+                    inquirer.prompt(
+                        [{
+                            type: 'input',
+                            name: 'title',
+                            message: 'Enter the name of your title (Required)',
+                            validate: titleName => {
+                                if (titleName) {
+                                    return true;
+                                } else {
+                                    console.log('Please enter your title name!');
+                                    return false;
+                                }
+                            }
+                        },
+                        // {
+                        //     type: 'list',
+                        //     name: 'department',
+                        //     message: 'Which department are you from?',
+                        //     choices: departmentChoices
+                        // },
+                        {
+                            type: 'input',
+                            name: 'salary',
+                            message: 'Enter your salary (Required)',
+                            validate: salary => {
+                                if (salary) {
+                                    return true;
+                                } else {
+                                    console.log('Please enter your salary!');
+                                    return false;
+                                }
+                            }
+                        }]
+                    )
+                        .then(({ title, salary }) => {
+                            const query = connection.query(
+                                'UPDATE role SET title = ?, salary = ? WHERE id = ?',
+                                [
+                                    title,
+                                    // department: department,
+                                    salary
+                                    ,
+                                    role.role
+                                ],
+                                function (err, res) {
+                                    if (err) throw err;
+                                }
+                            )
+                        })
+                        .then(() => promptMenu())
+                })
+        });
 
-        })
-}
+};
 
 promptMenu();
