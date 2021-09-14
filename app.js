@@ -66,9 +66,10 @@ const selectRoles = () => {
         }
     )
 };
+
 const selectEmployees = () => {
     connection.query(
-        "SELECT E.id, E.first_name, E.last_name, R.title, D.name AS department, R.salary, CONCAT(M.first_name,' ',M.last_name) AS manager FROM employee E JOIN role R ON E.role_id = R.id JOIN department D ON R.department_id = D.id JOIN employee M ON E.manager_id = M.id;",
+        "SELECT E.id, E.first_name, E.last_name, R.title, D.name AS department, R.salary, CONCAT(M.first_name,' ',M.last_name) AS manager FROM employee E JOIN role R ON E.role_id = R.id JOIN department D ON R.department_id = D.id LEFT JOIN employee M ON E.manager_id = M.id;",
         (err, results) => {
             console.table(results); // results contains rows returned by server
             promptMenu();
@@ -154,14 +155,14 @@ const promptAddRole = () => {
                         'INSERT INTO role SET ?',
                         {
                             title: title,
-                            department_id: department.value,
+                            department_id: department,
                             salary: salary
                         },
                         function (err, res) {
                             if (err) throw err;
                         }
                     )
-                }).then(() => promptAddEmployee())
+                }).then(() => selectRoles())
 
         })
 }
@@ -177,8 +178,8 @@ const promptAddEmployee = (roles) => {
                 title
 
             }) => ({
-                title: id,
-                value: title
+                value: id,
+                name: title
             }))
 
             connection.promise().query(
@@ -188,7 +189,7 @@ const promptAddEmployee = (roles) => {
                     id,
                     manager
                 }) => ({
-                    id: id,
+                    value: id,
                     name: manager
                 }));
 
@@ -239,12 +240,12 @@ const promptAddEmployee = (roles) => {
                             {
                                 first_name: firstName,
                                 last_name: lastName,
-                                role_id: role.id,
-                                manager_id: manager.id
+                                role_id: role,
+                                manager_id: manager
                             },
                             function (err, res) {
                                 if (err) throw err;
-                                // console.table(depname)
+                                console.log({ role, manager })
                             }
                         )
                     })
