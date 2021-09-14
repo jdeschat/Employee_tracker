@@ -267,74 +267,83 @@ const promptUpdateRole = () => {
             }) => ({
                 value: id,
                 name: title
-            }));
-
-            inquirer.prompt(
-                [
-                    {
-                        type: 'list',
-                        name: 'role',
-                        message: 'Which role do you want to update?',
-                        choices: roleChoices
-                    }
-                ]
+            }))
+            connection.promise().query(
+                "SELECT department.id, department.name FROM department;"
             )
-                .then(role => {
-                    // TODO: Update the managers with the responses.
-                    console.log(role);
-                    inquirer.prompt(
-                        [{
-                            type: 'input',
-                            name: 'title',
-                            message: 'Enter the name of your title (Required)',
-                            validate: titleName => {
-                                if (titleName) {
-                                    return true;
-                                } else {
-                                    console.log('Please enter your title name!');
-                                    return false;
-                                }
-                            }
-                        },
-                        // {
-                        //     type: 'list',
-                        //     name: 'department',
-                        //     message: 'Which department are you from?',
-                        //     choices: departmentChoices
-                        // },
-                        {
-                            type: 'input',
-                            name: 'salary',
-                            message: 'Enter your salary (Required)',
-                            validate: salary => {
-                                if (salary) {
-                                    return true;
-                                } else {
-                                    console.log('Please enter your salary!');
-                                    return false;
-                                }
-                            }
-                        }]
-                    )
-                        .then(({ title, salary }) => {
-                            const query = connection.query(
-                                'UPDATE role SET title = ?, salary = ? WHERE id = ?',
-                                [
-                                    title,
-                                    // department: department,
-                                    salary
-                                    ,
-                                    role.role
-                                ],
-                                function (err, res) {
-                                    if (err) throw err;
-                                }
-                            )
-                        })
-                        .then(() => promptMenu())
-                })
-        });
+                .then(([department]) => {
+                    let departmentChoices = department.map(({
+                        id,
+                        name
+                    }) => ({
+                        name: name,
+                        value: id
+                    }));
 
-};
+                    inquirer.prompt(
+                        [
+                            {
+                                type: 'list',
+                                name: 'role',
+                                message: 'Which role do you want to update?',
+                                choices: roleChoices
+                            }
+                        ]
+                    )
+                        .then(role => {
+                            console.log(role);
+                            inquirer.prompt(
+                                [{
+                                    type: 'input',
+                                    name: 'title',
+                                    message: 'Enter the name of your title (Required)',
+                                    validate: titleName => {
+                                        if (titleName) {
+                                            return true;
+                                        } else {
+                                            console.log('Please enter your title name!');
+                                            return false;
+                                        }
+                                    }
+                                },
+                                {
+                                    type: 'list',
+                                    name: 'department',
+                                    message: 'Which department are you from?',
+                                    choices: departmentChoices
+                                },
+                                {
+                                    type: 'input',
+                                    name: 'salary',
+                                    message: 'Enter your salary (Required)',
+                                    validate: salary => {
+                                        if (salary) {
+                                            return true;
+                                        } else {
+                                            console.log('Please enter your salary!');
+                                            return false;
+                                        }
+                                    }
+                                }]
+                            )
+                                .then(({ title, department, salary }) => {
+                                    const query = connection.query(
+                                        'UPDATE role SET title = ?, department = ?, salary = ? WHERE id = ?',
+                                        [
+                                            title,
+                                            department = department,
+                                            salary,
+                                            role.role
+                                        ],
+                                        function (err, res) {
+                                            if (err) throw err;
+                                        }
+                                    )
+                                }).then(() => promptMenu())
+                        })
+                });
+
+        });
+}
 
 promptMenu();
